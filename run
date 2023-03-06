@@ -44,15 +44,6 @@ echo "[INFO] Loading environmental variables"
 set -a
 source config.env
 
-echo "[INFO] Checking if the WebRoot exist"
-if [ -d $WEBROOT ];then
-	echo "[INFO] Directory $WEBROOT exists!"
-else 
-	echo "[WARN] Directory $WEBROOT not found"
-	echo "[INFO] Creating: $WEBROOT"
-	mkdir -p $WEBROOT
-fi
-
 echo "[INFO] Checking if Drive & Media directory's exist"
 if [ -d $DRIVE_PATH ];then
 	echo "[INFO] Directory $DRIVE_PATH exists!"
@@ -82,7 +73,9 @@ sed -i '0,/return 301/!{1,/return 301/!{2,/return 301/!{0,/return 301.*/s/return
 
 sed -i "0,/add_header Content-Security-Policy/ s/frame-ancestors.*/frame-ancestors 'self' https:\/\/www.$DOMAIN_NAME ;\";/" nginxconf/default.conf
 
-sed -i 's/auth_basic_user_file.*/auth_basic_user_file \/etc\/nginx\/htpasswd\/'"${HTPASSWD_FILE}"';/g' nginxconf/default.conf
+#sed -i 's/auth_basic_user_file.*/auth_basic_user_file \/etc\/nginx\/htpasswd\/'"${HTPASSWD_FILE}"';/g' nginxconf/default.conf
+
+sed -i 's/$dbconn = mysqli_connect.*/$dbconn = mysqli_connect("mysql_net", "root", '"${MYSQL_ROOT_PASSWORD}"', "updownio");/g' webroot/updownio/lib/db.php
 
 echo "[INFO] Starting Docker Environment"
 docker-compose up -d --force-recreate
