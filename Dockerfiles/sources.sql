@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS `updownio`.`subnets` (
 -- SHA256 sum of password
 INSERT INTO `updownio`.`users` VALUES (1,'admin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918','admin');
 -- CREATE USER 'jobber'@'docker_jobber_1.docker_space-net' IDENTIFIED BY 'jobber!@1001';
-CREATE USER 'jobber'@'172.28.1.6' IDENTIFIED BY 'jobber!@1001';
+CREATE USER 'jobber'@'172.28.1.1' IDENTIFIED BY 'jobber!@1001';
 -- GRANT select, update, insert ON updownio.* TO 'jobber'@'docker_jobber_1.docker_space-net';
-GRANT select, update, insert ON `updownio`.* TO 'jobber'@'172.28.1.6';
+GRANT select, update, insert ON `updownio`.* TO 'jobber'@'172.28.1.1';
 -- GRANT ALL PRIVILEGES ON *.* TO 'jobber'@'docker_jobber_1.docker_space-net' IDENTIFIED BY 'jobber!@1001' WITH GRANT OPTION;
 -- GRANT ALL PRIVILEGES ON *.* TO 'jobber'@'172.28.1.6' IDENTIFIED BY 'jobber!@1001' WITH GRANT OPTION;
