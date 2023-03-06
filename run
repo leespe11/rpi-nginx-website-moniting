@@ -75,11 +75,11 @@ sed -i "0,/add_header Content-Security-Policy/ s/frame-ancestors.*/frame-ancesto
 
 #sed -i 's/auth_basic_user_file.*/auth_basic_user_file \/etc\/nginx\/htpasswd\/'"${HTPASSWD_FILE}"';/g' nginxconf/default.conf
 
-sed -i 's/$dbconn = mysqli_connect.*/$dbconn = mysqli_connect("mysql_net", "root", '"${MYSQL_ROOT_PASSWORD}"', "updownio");/g' webroot/updownio/lib/db.php
+sed -i 's/$dbconn = mysqli_connect.*/$dbconn = mysqli_connect("mysql_net", "root", "'"${MYSQL_ROOT_PASSWORD}"'", "updownio");/g' webroot/updownio/lib/db.php
 
 echo "[INFO] Starting Docker Environment"
 docker-compose up -d --force-recreate
 
 echo "[INFO] Removing mysql seeder container"
-sleep 5
+sleep 10
 docker-compose rm -f mysql_seeder
