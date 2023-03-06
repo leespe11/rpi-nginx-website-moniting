@@ -1,0 +1,92 @@
+#!/bin/bash
+#### INFO
+
+#Check if HTTP access file exists
+echo "[INFO] Checking if .htpasswd file exists"
+htpasswd=0
+if ls -a ./nginxconf/htpasswd/.htpasswd* 1> /dev/null 2>&1; then 
+	echo "[INFO] Found .htpasswd file"
+	htpasswd=1
+	echo "[INFO] Using existing .htpasswd file"
+else
+	echo "[WARN] .htpasswd file not found"
+fi
+
+if [ $htpasswd -eq 0 ]; then 
+	echo "[INFO] Checking if package apache2-utils exists"
+	PKG=$(dpkg-query -W --showformat='${Status}\n' apache2-utils|grep "install ok installed")
+	if [[ "" ==  $PKG ]]; then
+		echo "[INFO Installing apache2-utils]"
+		sudo apt-get update && sudo apt-get install --yes apache2-utils
+	else
+		echo "[INFO] Found package apache2-utils"
+	fi
+fi
+
+echo "[INFO] Checking if ./nginxconf/htpasswd directory exists"
+if [ -d "./nginxconf/htpasswd" ]; then
+	echo "[INFO] Directory ./nginxconf/htpasswd exists!"
+else 
+	echo "[WARN] Directory ./nginxconf/htpasswd not found"
+	echo "[INFO] Creating: ./nginxconf/htpasswd"
+	mkdir ./nginxconf/htpasswd
+fi
+
+if [ $htpasswd -eq 0 ]; then
+	echo "[WARN] No .htpasswd file was found"
+	echo "[INFO] Creating new user"
+	pass=`echo $RANDOM | md5sum | head -c 20`
+	htpasswd -b -c ./nginxconf/htpasswd/.htpasswd-admin admin $pass &> /dev/null
+	echo -e "[INFO] -- New User -- \nUsername: \tadmin\nPassword: \t$pass"
+fi
+
+echo "[INFO] Loading environmental variables"
+set -a
+source config.env
+
+echo "[INFO] Checking if the WebRoot exist"
+if [ -d $WEBROOT ];then
+	echo "[INFO] Directory $WEBROOT exists!"
+else 
+	echo "[WARN] Directory $WEBROOT not found"
+	echo "[INFO] Creating: $WEBROOT"
+	mkdir -p $WEBROOT
+fi
+
+echo "[INFO] Checking if Drive & Media directory's exist"
+if [ -d $DRIVE_PATH ];then
+	echo "[INFO] Directory $DRIVE_PATH exists!"
+else 
+	echo "[WARN] Directory $DRIVE_PATH not found"
+	echo "[INFO] Creating: $DRIVE_PATH"
+	mkdir -p $DRIVE_PATH
+fi
+if [ -d $MEDIA_PATH ];then
+	echo "[INFO] Directory $MEDIA_PATH exists!"
+else 
+	echo "[WARN] Directory $MEDIA_PATH not found"
+	echo "[INFO] Creating: $MEDIA_PATH"
+	mkdir -p $MEDIA_PATH
+fi
+
+echo "[INFO] Applying environmental variables to conf.d/default.conf"
+sed -i '0,/server_name/ s/server_name.*/server_name '"${DOMAIN_NAME}"' *.'"${DOMAIN_NAME}"' '"${LOCAL_IP}"';/' nginxconf/default.conf
+sed -i '0,/server_name/!{0,/server_name.*/s/server_name.*/server_name '"${DOMAIN_NAME}"' *.'"${DOMAIN_NAME}"';/}' nginxconf/default.conf
+sed -i '0,/server_name/!{1,/server_name/!{0,/server_name.*/s/server_name.*/server_name www.'"${DOMAIN_NAME}"';/}}' nginxconf/default.conf
+
+sed -i '0,/if ($host = / s/if ($host = .*/if ($host = '"${DOMAIN_NAME}"') {/' nginxconf/default.conf
+sed -i '0,/if ($host = /!{0,/if ($host = .*/s/if ($host = .*/if ($host =  '"${LOCAL_IP}"'){/}' nginxconf/default.conf
+
+sed -i '0,/return 301/!{1,/return 301/!{0,/return 301.*/s/return 301.*/return 301 https:\/\/www.'"${DOMAIN_NAME}"'$request_uri;/}}' nginxconf/default.conf
+sed -i '0,/return 301/!{1,/return 301/!{2,/return 301/!{0,/return 301.*/s/return 301.*/return 301 https:\/\/www.'"${DOMAIN_NAME}"'$request_uri;/}}}' nginxconf/default.conf
+
+sed -i "0,/add_header Content-Security-Policy/ s/frame-ancestors.*/frame-ancestors 'self' https:\/\/www.$DOMAIN_NAME ;\";/" nginxconf/default.conf
+
+sed -i 's/auth_basic_user_file.*/auth_basic_user_file \/etc\/nginx\/htpasswd\/'"${HTPASSWD_FILE}"';/g' nginxconf/default.conf
+
+echo "[INFO] Starting Docker Environment"
+docker-compose up -d --force-recreate
+
+echo "[INFO] Removing mysql seeder container"
+sleep 5
+docker-compose rm -f mysql_seeder

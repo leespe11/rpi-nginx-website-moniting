@@ -1,0 +1,6 @@
+FROM alpine:latest
+
+RUN apk --no-cache --update add mysql-client
+COPY sources.sql /opt/sources.sql
+
+CMD ["/bin/sh", "-c", "sleep 5 && mysql -sN -u root -h mysql_net --password=${MYSQL_ROOT_PASSWORD} --port=3306 updownio < /opt/sources.sql && exit"]
