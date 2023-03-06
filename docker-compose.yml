@@ -37,7 +37,7 @@ services:
       context: ./Dockerfiles
       dockerfile: Dockerfile-php
     image: 'updownio_php:latest'
-    restart: unless-stopped 
+    restart: unless-stopped
     environment:
       - TZ=${TZ}
     volumes:
