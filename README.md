@@ -25,11 +25,11 @@ To enable email notfications for updownio:
 2. Edit lines in **33 - 40** in `webroot/updownio/mail.php`
 ```PHP
 ...
-$mail->Host = 'smtp.gmail.com';			# Replace with your email providers outgoing smpt server
-$mail->Port = 587;				# Relace with according port (587 is secure) 
-$mail->SMTPAuth = true;				# Authenticate True/Falsez`
-$mail->Username = 'example@gmail.com';		# Your email address 
-$mail->Password = '123456';		# Your email password
+$mail->Host = 'smtp.gmail.com';				# Replace with your email providers outgoing smpt server
+$mail->Port = 587;					# Relace with according port (587 is secure) 
+$mail->SMTPAuth = true;					# Authenticate True/Falsez`
+$mail->Username = 'example@gmail.com';			# Your email address 
+$mail->Password = '123456';				# Your email password
 $mail->setFrom('example@gmail.com', 'updown.io');	# Your email address and email 'name' (e.g: 'bob@gmail.com', 'Bob Smith')
 $mail->addReplyTo('noreply', 'updown.io');				
 $mail->addAddress('bobsmith@gmail.com', 'Bob Smith');	# Option to add more addresses
